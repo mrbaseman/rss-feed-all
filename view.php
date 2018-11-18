@@ -3,9 +3,10 @@
  *
  * @category        snippet
  * @package         rss feed all
- * @version         0.2.1
+ * @version         0.3.0
  * @authors         Martin Hecht (mrbaseman)
- * @copyright       (c) 2016, Martin Hecht (mrbaseman)
+ * @copyright       (c) 2018, Martin Hecht (mrbaseman)
+ * @link            https://github.com/WebsiteBaker-modules/rss-feed-all
  * @link            http://forum.wbce.org/viewtopic.php?id=655
  * @license         GNU General Public License
  * @platform        WebsiteBaker 2.8.x

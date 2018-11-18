@@ -3,9 +3,10 @@
  *
  * @category        snippet
  * @package         rss feed all
- * @version         0.2.1
+ * @version         0.3.0
  * @authors         Martin Hecht (mrbaseman)
- * @copyright       (c) 2016, Martin Hecht (mrbaseman)
+ * @copyright       (c) 2018, Martin Hecht (mrbaseman)
+ * @link            https://github.com/WebsiteBaker-modules/rss-feed-all
  * @link            http://forum.wbce.org/viewtopic.php?id=655
  * @license         GNU General Public License
  * @platform        WebsiteBaker 2.8.x
@@ -23,6 +24,7 @@ require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 // Must include code to stop this file being accessed directly
 if(!defined('WB_PATH')) {
         // Stop this file being access directly
+        if(!headers_sent()) header("Location: ../index.php",TRUE,301);
         die('<head><title>Access denied</title></head><body><h2 style="color:red;margin:3em auto;text-align:center;">Cannot access this file directly</h2></body></html>');
 }
 /* -------------------------------------------------------- */
@@ -43,7 +45,7 @@ if (!function_exists('RssFeedAll_Render')) {
 
 
         // -------------------------------------------------------------------------
-        // CONFIGURATION SECTION - copy this part into a local config.php 
+        // DEFAULT CONFIGURATION SECTION - do site-specific setup in config.php
         // -------------------------------------------------------------------------
 
         $RssFeedAll_limit = 15;  // Change this if you need more or less items returned
@@ -54,10 +56,10 @@ if (!function_exists('RssFeedAll_Render')) {
 
         // Include some page_id's explicitly,
         // Array of page_ids of pages you want to have posted e.g. array( 3, 5, 7);
-        $RssFeedAll_include = array();        
-        
+        $RssFeedAll_include = array();
+
         // for members of the admin group you might want to add a few more pages,
-        // only the difference is needed, e.g. you might want to add page_id = 11 
+        // only the difference is needed, e.g. you might want to add page_id = 11
         // and all private pages: array( 11, "private");
         $RssFeedAll_include_admin = array();
 
@@ -66,21 +68,25 @@ if (!function_exists('RssFeedAll_Render')) {
         $RssFeedAll_exclude_admin = array();
 
         // and the same for the superadmin account, e.g. here we remove the page_ids
-        // from above, and add all other "visibilities", "private" is already in the list 
+        // from above, and add all other "visibilities", "private" is already in the list
         // array( -3, -5, -7, "hidden", "registered", "none");
         $RssFeedAll_include_superadmin = array();
 
         // and also the exclude list, remove the stuff from above:
         // array("-intranet", "-intern");
         $RssFeedAll_exclude_superadmin = array();
-        
+
+        // we may restrict the output to urls that include specific words
+        // array("aktuell", "posts", "news");
+        $RssFeedAll_restrict = array();
+
         // Topics Module
         $topics_mod_name     = "topics";        // Name of the module
-        
+
         // OneForAll Module
         $oneforall_mod_names    = "oneforall";  // Names of the oneforall modules. Seperated by a comma.
 
-        //$oneforall_mod_names  = "oneforall,projects,portfolio";       // Names of the oneforall modules. 
+        //$oneforall_mod_names  = "oneforall,projects,portfolio";       // Names of the oneforall modules.
                                                                         // Seperated by a comma.
 
         // -------------------------------------------------------------------------
@@ -128,7 +134,7 @@ if (!function_exists('RssFeedAll_Render')) {
                 $RssFeedAll_include = RssFeedAll_MergeArrays( $RssFeedAll_include, $RssFeedAll_include_superadmin);
                 $RssFeedAll_exclude = RssFeedAll_MergeArrays( $RssFeedAll_exclude, $RssFeedAll_exclude_superadmin);
             }
-        } 
+        }
 
         // call pages
         RssFeedAll_Pages($output_array, $debug_info, $public, $modules, $counter, $RssFeedAll_exclude, $RssFeedAll_include, $wb);
@@ -140,39 +146,39 @@ if (!function_exists('RssFeedAll_Render')) {
         $page_counter = $counter;
 
         //  call modules
-        if (in_array('news', $modules)) 
-            RssFeedAll_News( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb ); 
+        if (in_array('news', $modules))
+            RssFeedAll_News( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );
 
         if (in_array('bakery', $modules))
-            RssFeedAll_Bakery( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb ); 
+            RssFeedAll_Bakery( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );
 
         if (in_array('catalogs', $modules))
-            RssFeedAll_Catalog( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb ); 
+            RssFeedAll_Catalog( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );
 
         if (in_array('portfolio', $modules))
-            RssFeedAll_Portfolio( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb ); 
+            RssFeedAll_Portfolio( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );
 
         if (in_array($topics_mod_name, $modules))
-            RssFeedAll_Topics( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $topics_mod_name, $wb ); 
+            RssFeedAll_Topics( $output_array, $debug_info, $public, $counter,  $topics_mod_name, $RssFeedAll_exclude, $wb );
 
         if (in_array('showcase', $modules))
-            RssFeedAll_Showcase( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb ); 
+            RssFeedAll_Showcase( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );
 
         $oneforall_mods = explode(',',$oneforall_mod_names);
         foreach ( $oneforall_mods as $oneforall_mod_name) {
             $oneforall_mod_name = trim($oneforall_mod_name);
             if (in_array($oneforall_mod_name, $modules))
-                RssFeedAll_OneForAll( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $oneforall_mod_names, $wb ); 
+                RssFeedAll_OneForAll( $output_array, $debug_info, $public, $counter, $oneforall_mod_names, $RssFeedAll_exclude, $wb );
         }
 
         if (in_array('procalendar', $modules))
-            RssFeedAll_procalendar( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );  
+            RssFeedAll_procalendar( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );
 
         /* another module xxxxxxxxx
-        if (in_array('xxxxxxxx', $modules)) 
-            RssFeedAll_xxxxxxxx( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb ); 
+        if (in_array('xxxxxxxx', $modules))
+            RssFeedAll_xxxxxxxx( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );
         */
-        
+
         // sort
         $alastchange = array();
 
@@ -186,8 +192,8 @@ if (!function_exists('RssFeedAll_Render')) {
         RssFeedAll_Header($debug, $charset);
 
         // output list
-        RssFeedAll_Items($output_array, $RssFeedAll_limit);
-        
+        RssFeedAll_Items($output_array, $RssFeedAll_limit, $RssFeedAll_restrict);
+
         // output footer
         RssFeedAll_footer( $debug, $counter, $page_counter, $debug_info);
     }
@@ -195,7 +201,7 @@ if (!function_exists('RssFeedAll_Render')) {
 // merge configuration arrays
 // **************************
 
-    function RssFeedAll_MergeArrays($orig_arr, $diff_arr){ 
+    function RssFeedAll_MergeArrays($orig_arr, $diff_arr){
         $add_items = array();
         $del_items = array();
         foreach ( $diff_arr as $i ) {
@@ -246,11 +252,11 @@ if (!function_exists('RssFeedAll_Render')) {
             // Required by CSS 2.0
             echo '<?xml version="1.0" encoding="'.$charset.'"?>';
             echo "\n".'<rss version="2.0">';
-            echo "\n".'<channel>'; 
-            echo "\n\t".'<title><![CDATA['.WEBSITE_TITLE.']]></title>';    
-            echo "\n\t".'<link>'.WB_URL.'</link>';   
-            echo "\n\t".'<description>'.WEBSITE_DESCRIPTION.'</description>'; 
-            // Optional header info 
+            echo "\n".'<channel>';
+            echo "\n\t".'<title><![CDATA['.WEBSITE_TITLE.']]></title>';
+            echo "\n\t".'<link>'.WB_URL.'</link>';
+            echo "\n\t".'<description>'.WEBSITE_DESCRIPTION.'</description>';
+            // Optional header info
 
             echo "\n\t".'<language>'.strtolower(DEFAULT_LANGUAGE).'</language>';
             echo "\n\t".'<copyright>Copyright '.date('Y').', '.WEBSITE_TITLE.'</copyright>';
@@ -266,7 +272,7 @@ if (!function_exists('RssFeedAll_Render')) {
 // output of the individual entries
 // ********************************
 
-    function RssFeedAll_Items($output_array, $RssFeedAll_limit){
+    function RssFeedAll_Items($output_array, $RssFeedAll_limit, $RssFeedAll_restrict){
         $output_counter=0;
         foreach ($output_array as $o){
             global $shorturl;
@@ -281,18 +287,26 @@ if (!function_exists('RssFeedAll_Render')) {
                             $link = str_replace( PAGE_EXTENSION , '/', $link);
                     }
             }
-            $lin = '<item>'; 
-            $lin .=  "\n\t\t".'<title><![CDATA['.$o['title']
-                 .' / '.$o['lastchange'].']]></title>'; 
-            $lin .=  "\n\t\t".'<link>'.$link.'</link>'; 
-            $lin .=  "\n\t\t".'<description><![CDATA['.$o['title'].': '.$o['description'].']]></description>'; 
-            $lin .=  "\n\t\t".'<category>'.$o['category'].'</category>'; 
-            $lin .=  "\n\t\t".'<author>'.$o['author'].'</author>'; 
-            $lin .=  "\n\t\t".'<pubDate>'.$o['pubDate'].'</pubDate>'; 
-            $lin .=  "\n\t\t".'<guid>'.$link.'</guid>'; 
-            $lin .=  "\n\t".'</item>';
-            echo $lin;
-            $output_counter++;
+            $show_item = empty($RssFeedAll_restrict);
+            if(!$show_item) {
+                foreach ($RssFeedAll_restrict as $r){
+                    if (strpos($link, $r) !== false) $show_item = true;
+                }
+            }
+            if($show_item){
+                $lin = '<item>';
+                $lin .=  "\n\t\t".'<title><![CDATA['.$o['title']
+                     .' / '.$o['lastchange'].']]></title>';
+                $lin .=  "\n\t\t".'<link>'.$link.'</link>';
+                $lin .=  "\n\t\t".'<description><![CDATA['.$o['title'].': '.$o['description'].']]></description>';
+                $lin .=  "\n\t\t".'<category>'.$o['category'].'</category>';
+                $lin .=  "\n\t\t".'<author>'.$o['author'].'</author>';
+                $lin .=  "\n\t\t".'<pubDate>'.$o['pubDate'].'</pubDate>';
+                $lin .=  "\n\t\t".'<guid>'.$link.'</guid>';
+                $lin .=  "\n\t".'</item>';
+                echo $lin;
+                $output_counter++;
+            }
             if(($output_counter>=$RssFeedAll_limit) and ($RssFeedAll_limit!=0)) return;
         }
     }
@@ -318,7 +332,7 @@ if (!function_exists('RssFeedAll_Render')) {
                 echo "\n".'</div>';
         } else {
             echo "\n".'</channel>';
-            echo "\n".'</rss>';        
+            echo "\n".'</rss>';
         }
     }
 
@@ -421,8 +435,8 @@ if (!function_exists('RssFeedAll_Render')) {
         if ($result && $result->numRows() > 0) {
             while ($page = $result->fetchRow()) {
                 $curr_page_id = $page['page_id'];
-                if(($wb->page_is_visible($page)) 
-                    or (in_array($curr_page_id, $RssFeedAll_include)) 
+                if(($wb->page_is_visible($page))
+                    or (in_array($curr_page_id, $RssFeedAll_include))
                     or (in_array($page['visibility'], $RssFeedAll_include))
                     or (in_array('all', $RssFeedAll_include))
                 ) {
@@ -435,10 +449,10 @@ if (!function_exists('RssFeedAll_Render')) {
                         $record = array (
                             'lastchange' => $lastchange,
                             'title' => $ptitle,
-                            'link'  => $url,  
-                            'description' => $page['description'], 
-                            'category' => $category, 
-                            'author' => RssFeedAll_GetUserName($page['modified_by']), 
+                            'link'  => $url,
+                            'description' => $page['description'],
+                            'category' => $category,
+                            'author' => RssFeedAll_GetUserName($page['modified_by']),
                             'pubDate' => $pubDate
                         );
                         $output_array[] = $record;
@@ -466,12 +480,12 @@ if (!function_exists('RssFeedAll_Render')) {
         &$debug_info,
         &$public,
         &$counter,
-        $RssFeedAll_exclude, 
+        $RssFeedAll_exclude,
         $wb
     ){
 
         $ts = time();
-    
+
         // News
         $sql = "SELECT `section_id`,"
              . "       `link`,"
@@ -501,10 +515,10 @@ if (!function_exists('RssFeedAll_Render')) {
                     $record = array (
                         'lastchange' => $lastchange,
                         'title' => $ptitle,
-                        'link'  => $url,  
-                        'description' => $news['content_short'], 
-                        'category' => $category, 
-                        'author' => RssFeedAll_GetUserName($news['posted_by']), 
+                        'link'  => $url,
+                        'description' => $news['content_short'],
+                        'category' => $category,
+                        'author' => RssFeedAll_GetUserName($news['posted_by']),
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;
@@ -525,7 +539,7 @@ if (!function_exists('RssFeedAll_Render')) {
         &$debug_info,
         &$public,
         &$counter,
-        $RssFeedAll_exclude, 
+        $RssFeedAll_exclude,
         $wb
     ){
 
@@ -556,10 +570,10 @@ if (!function_exists('RssFeedAll_Render')) {
                     $record = array (
                         'lastchange' => $lastchange,
                         'title' => $ptitle,
-                        'link'  => $url,  
-                        'description' => $bakery['description'], 
-                        'category' => $category, 
-                        'author' => RssFeedAll_GetUserName($bakery['created_by']), 
+                        'link'  => $url,
+                        'description' => $bakery['description'],
+                        'category' => $category,
+                        'author' => RssFeedAll_GetUserName($bakery['created_by']),
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;
@@ -579,7 +593,7 @@ if (!function_exists('RssFeedAll_Render')) {
         &$debug_info,
         &$public,
         &$counter,
-        $RssFeedAll_exclude, 
+        $RssFeedAll_exclude,
         $wb
     ){
 
@@ -607,10 +621,10 @@ if (!function_exists('RssFeedAll_Render')) {
                     $record = array (
                         'lastchange' => $lastchange,
                         'title' => $ptitle,
-                        'link'  => $url,  
-                        'description' => $catalogs['description'], 
-                        'category' => $category, 
-                        'author' => RssFeedAll_GetUserName($catalogs['modified_by']), 
+                        'link'  => $url,
+                        'description' => $catalogs['description'],
+                        'category' => $category,
+                        'author' => RssFeedAll_GetUserName($catalogs['modified_by']),
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;
@@ -630,7 +644,7 @@ if (!function_exists('RssFeedAll_Render')) {
         &$debug_info,
         &$public,
         &$counter,
-        $RssFeedAll_exclude, 
+        $RssFeedAll_exclude,
         $wb
     ){
 
@@ -659,10 +673,10 @@ if (!function_exists('RssFeedAll_Render')) {
                     $record = array (
                         'lastchange' => $lastchange,
                         'title' => $ptitle,
-                        'link'  => $link,  
-                        'description' => $ptitle, 
-                        'category' => $category, 
-                        'author' => RssFeedAll_GetUserName($portfolio['modified_by']), 
+                        'link'  => $link,
+                        'description' => $ptitle,
+                        'category' => $category,
+                        'author' => RssFeedAll_GetUserName($portfolio['modified_by']),
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;
@@ -683,7 +697,7 @@ if (!function_exists('RssFeedAll_Render')) {
         &$public,
         &$counter,
         $topics_mod_name,
-        $RssFeedAll_exclude, 
+        $RssFeedAll_exclude,
         $wb
     ){
 
@@ -693,7 +707,7 @@ if (!function_exists('RssFeedAll_Render')) {
              . "       `link`,"
              . "       `posted_modified`,"
              . "       `posted_by`,"
-             . "       `description`,"                 
+             . "       `description`,"
              . "       `posted_first`,"
              . "       `title`"
              . "  FROM `".TABLE_PREFIX."mod_".$topics_mod_name."`"
@@ -716,12 +730,12 @@ if (!function_exists('RssFeedAll_Render')) {
                     $pubDate = gmdate("r", $topics['posted_first']+TIMEZONE);
                     $link    = htmlspecialchars(WB_URL.$topics_directory.$topics['link'].PAGE_EXTENSION);
                     $record = array (
-                        'lastchange' => $lastchange,
+                        'lastchange' => $lastmod,
                         'title' => $ptitle,
-                        'link'  => $link,  
-                        'description' => $topics['description'], 
-                        'category' => $category, 
-                        'author' => RssFeedAll_GetUserName($topics['posted_by']), 
+                        'link'  => $link,
+                        'description' => $topics['description'],
+                        'category' => $category,
+                        'author' => RssFeedAll_GetUserName($topics['posted_by']),
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;
@@ -741,7 +755,7 @@ if (!function_exists('RssFeedAll_Render')) {
         &$debug_info,
         &$public,
         &$counter,
-        $RssFeedAll_exclude, 
+        $RssFeedAll_exclude,
         $wb
     ){
 
@@ -769,12 +783,12 @@ if (!function_exists('RssFeedAll_Render')) {
                     $pubDate = gmdate("r", $showcase['modified_when']+TIMEZONE);
                     $link    = htmlspecialchars($wb->page_link($showcase['link']));
                     $record = array (
-                        'lastchange' => $lastchange,
+                        'lastchange' => $lastmod,
                         'title' => $ptitle,
-                        'link'  => $link,  
-                        'description' => $ptitle, 
-                        'category' => $category, 
-                        'author' => '', 
+                        'link'  => $link,
+                        'description' => $ptitle,
+                        'category' => $category,
+                        'author' => '',
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;
@@ -794,8 +808,8 @@ if (!function_exists('RssFeedAll_Render')) {
         &$debug_info,
         &$public,
         &$counter,
-        $RssFeedAll_exclude, 
         $oneforall_mod_name,
+        $RssFeedAll_exclude,
         $wb
     ){
 
@@ -823,12 +837,12 @@ if (!function_exists('RssFeedAll_Render')) {
                     $pubDate = gmdate("r", $oneforall['modified_when']+TIMEZONE);
                     $link    = htmlspecialchars($wb->page_link($page.$oneforall['link']));
                     $record = array (
-                        'lastchange' => $lastchange,
+                        'lastchange' => $lastmod,
                         'title' => $ptitle,
-                        'link'  => $link,  
-                        'description' => $ptitle, 
-                        'category' => $category, 
-                        'author' => RssFeedAll_GetUserName($oneforall['posted_by']), 
+                        'link'  => $link,
+                        'description' => $ptitle,
+                        'category' => $category,
+                        'author' => RssFeedAll_GetUserName($oneforall['posted_by']),
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;
@@ -853,18 +867,18 @@ if (!function_exists('RssFeedAll_Render')) {
         &$debug_info,
         &$public,
         &$counter,
-        $RssFeedAll_exclude, 
+        $RssFeedAll_exclude,
         $wb
     ){
 
         // Set defaults
         date_default_timezone_set('UTC');
-        $year  = date('Y', time()); 
+        $year  = date('Y', time());
         $month = date('n', time());
 
         // Editable values
         // Show how many items, defaults to 10?
-        $max   = 10; 
+        $max   = 10;
 
         // Set time frame for coming events, default one year
         $year2 = $year + 1;
@@ -907,11 +921,11 @@ if (!function_exists('RssFeedAll_Render')) {
                          $page_link = $wb->page_link($row['link']);
                       }
                    }
-                }                    
+                }
                 $link = $page_link.'?id='.$procalendar['id'].'&amp;detail=1';
 
                 $checked = RssFeedAll_check_link($procalendar['link'], $RssFeedAll_exclude);
-                if ($checked === true) {                    
+                if ($checked === true) {
                     $ptitle = $procalendar['name'];
                     $lastchange = gmdate("Y-m-d", $procalendar['date_start']);
                     $pubDate = gmdate("r", $procalendar['date_start']);
@@ -919,10 +933,10 @@ if (!function_exists('RssFeedAll_Render')) {
                     $record = array (
                         'lastchange' => $lastchange,
                         'title' => $ptitle,
-                        'link'  => $link,  
-                        'description' => stripslashes($procalendar["description"]), 
-                        'category' => $category, 
-                        'author' => RssFeedAll_GetUserName($procalendar['owner']), 
+                        'link'  => $link,
+                        'description' => stripslashes($procalendar["description"]),
+                        'category' => $category,
+                        'author' => RssFeedAll_GetUserName($procalendar['owner']),
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;
@@ -951,7 +965,7 @@ if (!function_exists('RssFeedAll_Render')) {
         &$debug_info,
         &$public,
         &$counter,
-        $RssFeedAll_exclude, 
+        $RssFeedAll_exclude,
         $wb
     ){
 
@@ -979,10 +993,10 @@ if (!function_exists('RssFeedAll_Render')) {
                     $record = array (
                         'lastchange' => $lastchange,
                         'title' => $ptitle,
-                        'link'  => $link,  
-                        'description' => $ptitle, 
-                        'category' => $category, 
-                        'author' => RssFeedAll_GetUserName($xxxxxxxx['created_by']), 
+                        'link'  => $link,
+                        'description' => $ptitle,
+                        'category' => $category,
+                        'author' => RssFeedAll_GetUserName($xxxxxxxx['created_by']),
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;

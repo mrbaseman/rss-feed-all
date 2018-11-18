@@ -8,9 +8,10 @@ __M4_FILE__
  *
  * @category        snippet
  * @package         rss feed all
- * @version         0.2.1
+ * @version         0.3.0
  * @authors         Martin Hecht (mrbaseman)
- * @copyright       (c) 2016, Martin Hecht (mrbaseman)
+ * @copyright       (c) 2018, Martin Hecht (mrbaseman)
+ * @link            https://github.com/WebsiteBaker-modules/rss-feed-all
  * @link            http://forum.wbce.org/viewtopic.php?id=655
  * @license         GNU General Public License
  * @platform        WebsiteBaker 2.8.x
@@ -23,7 +24,7 @@ __M4_FILE__
 $module_directory   = 'rss-feed-all';
 $module_name        = 'rss feed all';
 $module_function    = 'snippet';
-$module_version     = '0.2.1';
+$module_version     = '0.3.0';
 $module_platform    = 'WebsiteBaker 2.8.x';
 $module_author      = 'Martin Hecht (mrbaseman)';
 $module_license     = 'GNU General Public License';
