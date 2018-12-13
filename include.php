@@ -3,7 +3,7 @@
  *
  * @category        snippet
  * @package         rss feed all
- * @version         0.3.0
+ * @version         0.4.1
  * @authors         Martin Hecht (mrbaseman)
  * @copyright       (c) 2018, Martin Hecht (mrbaseman)
  * @link            https://github.com/WebsiteBaker-modules/rss-feed-all
@@ -263,6 +263,9 @@ if (!function_exists('RssFeedAll_Render')) {
             echo "\n\t".'<managingEditor>'. SERVER_EMAIL.'</managingEditor>';
             echo "\n\t".'<webMaster>'. SERVER_EMAIL.'</webMaster>';
             echo "\n\t".'<category>'. WEBSITE_TITLE.'</category>';
+            if(defined('WBCE_VERSION'))
+            echo "\n\t".'<generator>WBCE Content Management System</generator>';
+            else
             echo "\n\t".'<generator>WebsiteBaker Content Management System</generator>';
         }
 

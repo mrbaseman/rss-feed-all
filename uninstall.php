@@ -1,14 +1,10 @@
 <?php
 
-/*
-__M4_FILE__
-*/
-
 /**
  *
  * @category        snippet
  * @package         rss feed all
- * @version         0.3.0
+ * @version         0.4.1
  * @authors         Martin Hecht (mrbaseman)
  * @copyright       (c) 2018, Martin Hecht (mrbaseman)
  * @link            https://github.com/WebsiteBaker-modules/rss-feed-all
