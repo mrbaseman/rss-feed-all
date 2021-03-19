@@ -4,10 +4,10 @@
  *
  * @category        snippet
  * @package         rss feed all
- * @version         0.4.1
+ * @version         0.4.3
  * @authors         Martin Hecht (mrbaseman)
- * @copyright       (c) 2018, Martin Hecht (mrbaseman)
- * @link            https://github.com/WebsiteBaker-modules/rss-feed-all
+ * @copyright       (c) 2021, Martin Hecht (mrbaseman)
+ * @link            https://github.com/mrbaseman/rss-feed-all
  * @link            http://forum.wbce.org/viewtopic.php?id=655
  * @license         GNU General Public License
  * @platform        WebsiteBaker 2.8.x
@@ -18,7 +18,7 @@
 $module_directory   = 'rss_feed_all';
 $module_name        = 'rss feed all';
 $module_function    = 'snippet';
-$module_version     = '0.4.1';
+$module_version     = '0.4.3';
 $module_platform    = 'WebsiteBaker 2.8.x';
 $module_author      = 'Martin Hecht (mrbaseman)';
 $module_license     = 'GNU General Public License';
@@ -41,6 +41,10 @@ suppress the section anchor, e.g. using an output filter.
 
 /*
  *      CHANGELOG
+ *
+ *      0.4.3   2021-01-03      - add support for News with Images
+ *
+ *      0.4.2   2020-05-16      - fix notice (and resulting fatal error) with "posted_by"
  *
  *      0.4.1   2018-12-13      - correctly reflect the generator software
  *                              - fix url in how-to-use description in info.php

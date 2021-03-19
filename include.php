@@ -3,10 +3,10 @@
  *
  * @category        snippet
  * @package         rss feed all
- * @version         0.4.1
+ * @version         0.4.3
  * @authors         Martin Hecht (mrbaseman)
- * @copyright       (c) 2018, Martin Hecht (mrbaseman)
- * @link            https://github.com/WebsiteBaker-modules/rss-feed-all
+ * @copyright       (c) 2021, Martin Hecht (mrbaseman)
+ * @link            https://github.com/mrbaseman/rss-feed-all
  * @link            http://forum.wbce.org/viewtopic.php?id=655
  * @license         GNU General Public License
  * @platform        WebsiteBaker 2.8.x
@@ -146,6 +146,9 @@ if (!function_exists('RssFeedAll_Render')) {
         $page_counter = $counter;
 
         //  call modules
+        if (in_array('news_img', $modules))
+            RssFeedAll_News_with_images( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );
+
         if (in_array('news', $modules))
             RssFeedAll_News( $output_array, $debug_info, $public, $counter, $RssFeedAll_exclude, $wb );
 
@@ -477,7 +480,67 @@ if (!function_exists('RssFeedAll_Render')) {
 
 // Get module pages of previously set modules
 // ******************************************
+// news with images
 
+    function RssFeedAll_News_with_images(
+        &$output_array,
+        &$debug_info,
+        &$public,
+        &$counter,
+        $RssFeedAll_exclude,
+        $wb
+    ){
+
+        $ts = time();
+
+        // News
+        $sql = "SELECT `section_id`,"
+             . "       `link`,"
+             . "       `posted_when`,"
+             . "       `published_when`,"
+             . "       `posted_by`,"
+             . "       `content_short`,"
+             . "       `title`"
+             . " FROM `".TABLE_PREFIX."mod_news_img_posts`"
+             . " WHERE `active` = '1'"
+             . "   AND (`published_when` = '0' OR `published_when` <= $ts)"
+             . "   AND (`published_until` = '0' OR `published_until` >= $ts)";
+        global $database;
+        $rs_news = $database->query($sql);
+
+        $category='News';
+
+        if ($rs_news->numRows() > 0) {
+            while ($news = $rs_news->fetchRow()) {
+                if (!in_array($news['section_id'], $public)) continue;
+                $checked = RssFeedAll_check_link($news['link'], $RssFeedAll_exclude);
+                if ($checked === true) {
+                    $ptitle = $news['title'];
+                    $lastchange =  gmdate("Y-m-d", $news['published_when']+TIMEZONE);
+                    $pubDate = gmdate("r", $news['published_when']+TIMEZONE);
+                    $url = htmlspecialchars($wb->page_link($news['link']));
+                    $record = array (
+                        'lastchange' => $lastchange,
+                        'title' => $ptitle,
+                        'link'  => $url,
+                        'description' => $news['content_short'],
+                        'category' => $category,
+                        'author' => RssFeedAll_GetUserName($news['posted_by']),
+                        'pubDate' => $pubDate
+                    );
+                    $output_array[] = $record;
+
+                    $counter++;
+                } else {
+                    $debug_info[] = $checked;
+                }
+            }
+        }
+    }
+
+
+
+// classical news
     function RssFeedAll_News(
         &$output_array,
         &$debug_info,
@@ -846,6 +909,7 @@ if (!function_exists('RssFeedAll_Render')) {
                         'description' => $ptitle,
                         'category' => $category,
                         'author' => RssFeedAll_GetUserName($oneforall['posted_by']),
+                        'author' => RssFeedAll_GetUserName($oneforall['modified_by']),
                         'pubDate' => $pubDate
                     );
                     $output_array[] = $record;
@@ -927,7 +991,7 @@ if (!function_exists('RssFeedAll_Render')) {
                 }
                 $link = $page_link.'?id='.$procalendar['id'].'&amp;detail=1';
 
-                $checked = RssFeedAll_check_link($procalendar['link'], $RssFeedAll_exclude);
+                $checked = @RssFeedAll_check_link($procalendar['link'], $RssFeedAll_exclude);
                 if ($checked === true) {
                     $ptitle = $procalendar['name'];
                     $lastchange = gmdate("Y-m-d", $procalendar['date_start']);
